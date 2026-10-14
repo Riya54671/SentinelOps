@@ -1,0 +1,102 @@
+{
+  "incident_id": "INC-77",
+  "alerts": [
+    {
+      "alert_id": "A-1042",
+      "timestamp": "2026-10-11T09:14:22Z",
+      "source": "firewall",
+      "rule": "Multiple failed SSH logins",
+      "src_ip": "185.220.101.45",
+      "dest_host": "payroll-srv-01",
+      "user": "svc_payroll",
+      "raw_log": "Oct 11 09:14:22 fw01 sshd[2211]: Failed password for svc_payroll from 185.220.101.45 port 51544 ssh2 (attempt 27 in 90s)"
+    },
+    {
+      "alert_id": "A-1043",
+      "timestamp": "2026-10-11T09:15:03Z",
+      "source": "auth",
+      "rule": "Successful login after repeated failures",
+      "src_ip": "185.220.101.45",
+      "dest_host": "payroll-srv-01",
+      "user": "svc_payroll",
+      "raw_log": "Oct 11 09:15:03 payroll-srv-01 sshd[2290]: Accepted password for svc_payroll from 185.220.101.45 port 51602 ssh2"
+    }
+  ],
+  "enrichment": {
+    "ip_reputation": "malicious",
+    "confidence": 0.9,
+    "known_benign": false,
+    "indicators": ["tor-exit-node", "abuseipdb-score-100", "otx-pulse-ssh-bruteforce"],
+    "sources_used": ["abuseipdb", "otx"],
+    "sources_failed": ["virustotal"],
+    "notes": "VirusTotal timed out; reputation confirmed by AbuseIPDB and OTX."
+  },
+  "correlation": {
+    "related_alert_ids": ["A-1042", "A-1043"],
+    "merged_into_existing": false,
+    "reasoning": "Same source IP, host and user within 60 seconds. A successful login right after repeated failures suggests a possible compromise."
+  },
+  "severity": {
+    "score": 86,
+    "reasoning": "Malicious source IP, a successful login on a payroll server and a service account involved.",
+    "needs_reenrichment": false
+  },
+  "proposals": [
+    {
+      "round": 1,
+      "actions": [
+        {"action": "isolate_host", "target": "payroll-srv-01", "params": {}}
+      ],
+      "rationale": "Isolate the host immediately to stop possible attacker access."
+    },
+    {
+      "round": 2,
+      "actions": [
+        {"action": "block_ip", "target": "185.220.101.45", "params": {}},
+        {"action": "reset_creds", "target": "svc_payroll", "params": {}}
+      ],
+      "rationale": "Revised per approval feedback: cut off the attacker and invalidate the credentials without taking the host offline."
+    }
+  ],
+  "decisions": [
+    {
+      "round": 1,
+      "decision": "reject",
+      "reason": "payroll-srv-01 is critical and runs payroll processing today. Isolation would stop salary payments.",
+      "constraints": ["do not isolate host", "prefer network-level IP block", "credential reset is acceptable"],
+      "modified_actions": []
+    },
+    {
+      "round": 2,
+      "decision": "approve",
+      "reason": "Blocking the IP and resetting credentials stops the attacker without interrupting payroll.",
+      "constraints": [],
+      "modified_actions": []
+    }
+  ],
+  "executed_actions": [
+    "block_ip 185.220.101.45 (SIMULATED)",
+    "reset_creds svc_payroll (SIMULATED)"
+  ],
+  "status": "contained",
+  "next_agent": "end",
+  "enrichment_attempts": 1,
+  "revision_round": 1,
+  "audit_trail": [
+    {"ts": "2026-10-11T09:15:10+00:00", "agent": "orchestrator", "message": "-> enrichment: Only valid next step."},
+    {"ts": "2026-10-11T09:15:14+00:00", "agent": "enrichment", "message": "VirusTotal timed out; used AbuseIPDB and OTX. Reputation: malicious (confidence 0.9)."},
+    {"ts": "2026-10-11T09:15:15+00:00", "agent": "orchestrator", "message": "-> correlation: Only valid next step."},
+    {"ts": "2026-10-11T09:15:18+00:00", "agent": "correlation", "message": "Linked A-1042 and A-1043 into one incident."},
+    {"ts": "2026-10-11T09:15:19+00:00", "agent": "orchestrator", "message": "-> severity: Only valid next step."},
+    {"ts": "2026-10-11T09:15:22+00:00", "agent": "severity", "message": "Score 86: malicious IP plus successful login on a critical host."},
+    {"ts": "2026-10-11T09:15:23+00:00", "agent": "orchestrator", "message": "-> playbook: Severity is high and the alert is not benign; a response is needed."},
+    {"ts": "2026-10-11T09:15:27+00:00", "agent": "playbook", "message": "Round 1 proposal: isolate_host payroll-srv-01."},
+    {"ts": "2026-10-11T09:15:28+00:00", "agent": "orchestrator", "message": "-> approval: Only valid next step."},
+    {"ts": "2026-10-11T09:15:32+00:00", "agent": "approval", "message": "Round 1: reject. Host runs payroll today."},
+    {"ts": "2026-10-11T09:15:33+00:00", "agent": "orchestrator", "message": "-> playbook: Proposal rejected (1 of 3 rounds used); revise using feedback."},
+    {"ts": "2026-10-11T09:15:37+00:00", "agent": "playbook", "message": "Round 2 proposal: block_ip 185.220.101.45 + reset_creds svc_payroll."},
+    {"ts": "2026-10-11T09:15:38+00:00", "agent": "orchestrator", "message": "-> approval: Only valid next step."},
+    {"ts": "2026-10-11T09:15:41+00:00", "agent": "approval", "message": "Round 2: approve. Acceptable business impact."},
+    {"ts": "2026-10-11T09:15:42+00:00", "agent": "orchestrator", "message": "-> end: Approved action set; close as contained."}
+  ]
+}

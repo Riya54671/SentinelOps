@@ -1,0 +1,10 @@
+{
+  "alert_id": "A-1042",
+  "timestamp": "2026-10-11T09:14:22Z",
+  "source": "firewall",
+  "rule": "Multiple failed SSH logins",
+  "src_ip": "185.220.101.45",
+  "dest_host": "payroll-srv-01",
+  "user": "svc_payroll",
+  "raw_log": "Oct 11 09:14:22 fw01 sshd[2211]: Failed password for svc_payroll from 185.220.101.45 port 51544 ssh2 (attempt 27 in 90s)"
+}
