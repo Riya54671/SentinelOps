@@ -1,0 +1,1 @@
+{"alert_id": "A001", "scenario": "S1_rejection_loop", "timestamp": "2026-10-12T02:10:00Z", "source": "EDR", "rule": "Suspicious PowerShell Download Cradle", "host": "fin-db-01", "user": "svc_backup", "src_ip": "185.220.101.45", "dest_ip": "10.0.5.20", "description": "PowerShell spawned by winword.exe downloading remote payload", "raw_severity": "high"}

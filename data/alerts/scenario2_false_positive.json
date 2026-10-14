@@ -1,0 +1,1 @@
+{"alert_id": "B001", "scenario": "S2_false_positive", "timestamp": "2026-10-12T09:05:00Z", "source": "Vuln Scanner", "rule": "Port Scan Detected", "host": "web-app-02", "user": "", "src_ip": "10.0.9.50", "dest_ip": "10.0.2.15", "description": "Sequential port scan from internal scanner 10.0.9.50", "raw_severity": "medium"}
