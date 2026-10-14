@@ -59,5 +59,7 @@ def ask(system: str, user: str, schema: Type[T],
                 return llm.invoke([("system", system), ("human", user)])
             except Exception as e:
                 last_err = e
+                print(f"[llm debug] {name} attempt {attempt + 1} failed: "
+                      f"{type(e).__name__}: {e}")
                 time.sleep(min(2 ** attempt + random.random(), 20))
     raise LLMError(f"All LLM providers failed: {last_err}")

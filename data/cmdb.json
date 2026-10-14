@@ -1,0 +1,74 @@
+[
+  {
+    "asset_id": "AST-00",
+    "hostname": "payroll-srv-01",
+    "criticality": "critical",
+    "owner": "Finance IT",
+    "business_function": "Payroll processing server (canonical sample scenario host)",
+    "maintenance_window": "Sun 02:00-04:00 IST"
+  },
+  {
+    "asset_id": "AST-01",
+    "hostname": "fin-db-01",
+    "criticality": "critical",
+    "owner": "Finance IT",
+    "business_function": "Payroll and general ledger database",
+    "maintenance_window": "Sun 02:00-04:00 IST"
+  },
+  {
+    "asset_id": "AST-02",
+    "hostname": "file-srv-01",
+    "criticality": "high",
+    "owner": "IT Infrastructure",
+    "business_function": "Central file server (shared drives, backups)",
+    "maintenance_window": "Sat 23:00-01:00 IST"
+  },
+  {
+    "asset_id": "AST-03",
+    "hostname": "web-app-02",
+    "criticality": "high",
+    "owner": "Platform Engineering",
+    "business_function": "Customer-facing web application",
+    "maintenance_window": "Daily 01:00-01:30 IST"
+  },
+  {
+    "asset_id": "AST-04",
+    "hostname": "jump-01",
+    "criticality": "high",
+    "owner": "SecOps",
+    "business_function": "Jump host for admin access to internal network",
+    "maintenance_window": "Sun 03:00-04:00 IST"
+  },
+  {
+    "asset_id": "AST-05",
+    "hostname": "hr-laptop-07",
+    "criticality": "medium",
+    "owner": "HR Department",
+    "business_function": "HR staff endpoint with access to payroll files",
+    "maintenance_window": "Anytime (single-user endpoint)"
+  },
+  {
+    "asset_id": "AST-06",
+    "hostname": "mail-gw-01",
+    "criticality": "critical",
+    "owner": "IT Infrastructure",
+    "business_function": "Primary mail gateway for the whole company",
+    "maintenance_window": "Sun 02:00-03:00 IST"
+  },
+  {
+    "asset_id": "AST-07",
+    "hostname": "dev-sandbox-01",
+    "criticality": "low",
+    "owner": "Engineering",
+    "business_function": "Developer sandbox, no production data",
+    "maintenance_window": "Anytime"
+  },
+  {
+    "asset_id": "AST-08",
+    "hostname": "mktg-site-01",
+    "criticality": "low",
+    "owner": "Marketing",
+    "business_function": "Public marketing website",
+    "maintenance_window": "Daily 00:00-06:00 IST"
+  }
+]
