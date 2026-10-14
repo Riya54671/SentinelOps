@@ -77,5 +77,12 @@ def build_graph():
 def run_incident(alert: Alert, incident_id: str | None = None) -> Incident:
     inc = Incident(incident_id=incident_id or f"INC-{uuid.uuid4().hex[:6]}",
                    alerts=[alert])
-    out = build_graph().invoke({"incident": inc}, {"recursion_limit": 40})
-    return out["incident"]
+    try:
+        out = build_graph().invoke({"incident": inc}, {"recursion_limit": 40})
+        return out["incident"]
+    except Exception as e:  # never crash the UI or the demo
+        inc.status = "error"
+        inc.log("orchestrator", f"Run aborted: {e}")
+        log_event(inc.incident_id, "orchestrator", "human", "tool_error",
+                  {"error": str(e)})
+        return inc
