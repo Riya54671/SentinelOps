@@ -1,0 +1,21 @@
+{
+  "ips": {
+    "185.220.101.45": {"malicious": true, "score": 95, "tags": ["tor-exit", "c2", "scanner"], "source": "local_ioc"},
+    "198.51.100.23": {"malicious": true, "score": 80, "tags": ["phishing-infra", "credential-theft"], "source": "local_ioc"},
+    "203.0.113.99": {"malicious": true, "score": 70, "tags": ["newly-registered", "phishing"], "source": "local_ioc"},
+    "203.0.113.150": {"malicious": false, "score": 40, "tags": ["file-sharing", "unknown"], "source": "local_ioc"},
+    "10.0.9.50": {"malicious": false, "score": 0, "tags": ["internal", "approved-scanner"], "source": "local_ioc"},
+
+    "45.155.205.233": {"malicious": true, "score": 92, "tags": ["c2", "cobalt-strike"], "source": "local_ioc"},
+    "91.240.118.172": {"malicious": true, "score": 88, "tags": ["brute-force", "ssh-scanner"], "source": "local_ioc"},
+    "194.26.29.102": {"malicious": true, "score": 85, "tags": ["malware-distribution", "loader"], "source": "local_ioc"},
+    "162.142.125.10": {"malicious": false, "score": 35, "tags": ["internet-scanner", "research"], "source": "local_ioc"},
+    "205.210.31.25": {"malicious": false, "score": 45, "tags": ["mass-scanner", "noisy"], "source": "local_ioc"},
+    "8.8.8.8": {"malicious": false, "score": 0, "tags": ["google-dns", "benign"], "source": "local_ioc"},
+    "1.1.1.1": {"malicious": false, "score": 0, "tags": ["cloudflare-dns", "benign"], "source": "local_ioc"},
+    "13.107.42.14": {"malicious": false, "score": 0, "tags": ["microsoft", "benign"], "source": "local_ioc"},
+    "142.250.77.46": {"malicious": false, "score": 0, "tags": ["google", "benign"], "source": "local_ioc"},
+    "104.18.32.7": {"malicious": false, "score": 5, "tags": ["cdn", "benign"], "source": "local_ioc"}
+  },
+  "default": {"malicious": false, "score": 10, "tags": ["unknown"], "source": "local_ioc_default"}
+}
