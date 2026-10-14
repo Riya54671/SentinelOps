@@ -36,6 +36,26 @@ Reject when the business impact is too high as proposed -- and give a
 reason specific enough that the playbook agent can revise around it.
 Keep your reason to 1-2 sentences."""
 
+import re
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+
+_DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+
+def _in_maintenance_window(asset, when):
+    """True if `when` falls inside asset['maintenance_window'], e.g. 'Sun 02:00-04:00 IST'."""
+    spec = (asset or {}).get("maintenance_window") or ""
+    m = re.match(r"(\w{3})\s+(\d{2}):(\d{2})-(\d{2}):(\d{2})\s*(\w+)?", spec.strip())
+    if not m:
+        return False                      # no usable window -> treat as outside
+    day, h1, m1, h2, m2, tz = m.groups()
+    zone = ZoneInfo("Asia/Kolkata") if tz == "IST" else timezone.utc
+    local = when.astimezone(zone)
+    if local.weekday() != _DAYS.index(day.lower()):
+        return False
+    minutes = local.hour * 60 + local.minute
+    return int(h1) * 60 + int(m1) <= minutes < int(h2) * 60 + int(m2)
+
 
 class _Judgement(BaseModel):
     decision: str          # "approve" | "modify" | "reject"
@@ -102,7 +122,12 @@ def run(inc: Incident) -> Incident:
         except Exception as e:
             decision = _fallback_decision(proposal.round, proposal.actions, record)
             decision.reason = f"LLM unavailable ({type(e).__name__}); {decision.reason}"
+        ts = datetime.fromisoformat(str(alert.timestamp).replace("Z", "+00:00"))
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        decision = _enforce_policy(inc, decision, proposal, record, ts)
 
+        inc.decisions.append(decision)
         inc.decisions.append(decision)
         inc.log("approval", f"Round {decision.round}: {decision.decision}. {decision.reason}")
         log_event(inc.incident_id, "approval", "orchestrator", "decision",
@@ -112,23 +137,26 @@ def run(inc: Incident) -> Incident:
     except Exception as e:
         return fail(inc, "approval", e)
 
-def _enforce_policy(inc, decision, proposal, asset):
-    """Hard business rule: never isolate a critical asset outside its maintenance window."""
-    bad = [a for a in proposal.actions
-           if a.action == "isolate_host"
-           and asset and asset.get("criticality") == "critical"
-           and not _in_maintenance_window(asset)]
-    if bad:
-        decision.decision = "reject"
-        decision.modified_actions = []
-        decision.constraints = ["do not isolate host",
-                                "prefer network-level IP block",
-                                "credential reset is acceptable"]
-        decision.reason = (f"{bad[0].target} is critical "
-                           f"({asset['business_function']}); isolation is blocked "
-                           "outside the maintenance window.")
-    elif decision.decision == "modify":
-        # modified_actions must really differ from the proposal
-        if decision.modified_actions == proposal.actions:
-            decision.decision = "reject"   # LLM said modify but changed nothing
+def _enforce_policy(inc, decision, proposal, asset,when):
+    """Never isolate a critical asset outside its maintenance window."""
+    risky = [a for a in proposal.actions
+             if a.action == "isolate_host" and asset
+             and asset.get("criticality") == "critical"
+             and not _in_maintenance_window(asset,when)]
+    if risky:
+        safe = [a for a in proposal.actions if a not in risky]
+        if safe:   # keep the safe actions -> real MODIFY
+            decision.decision = "modify"
+            decision.modified_actions = safe
+            decision.constraints = [f"defer isolate_host on {risky[0].target} "
+                                    f"to maintenance window ({asset['maintenance_window']})"]
+        else:      # nothing safe left -> REJECT, send back to Playbook
+            decision.decision = "reject"
+            decision.modified_actions = []
+            decision.constraints = ["do not isolate host", "prefer network-level IP block",
+                                    "credential reset is acceptable"]
+        decision.reason = (f"{risky[0].target} is critical ({asset['business_function']}); "
+                           "isolation is blocked outside the maintenance window.")
+    elif decision.decision == "modify" and decision.modified_actions == proposal.actions:
+        decision.decision = "approve"   # LLM changed nothing, so it's really an approve
     return decision
