@@ -35,3 +35,13 @@ def test_escalates_after_max_rejections():
             ProposedAction(action="isolate_host", target="h")]))
         inc.decisions.append(ApprovalDecision(round=r, decision="reject", reason="no"))
     assert orchestrator.allowed_next(inc) == ["human"]
+
+def test_run_incident_never_raises(monkeypatch, tmp_path):
+    monkeypatch.setenv("TRACE_DIR", str(tmp_path))
+
+    def boom(inc):
+        raise RuntimeError("orchestrator crashed")
+
+    monkeypatch.setattr(graph.orchestrator, "run", boom)
+    inc = graph.run_incident(_alert(), incident_id="INC-ERR")
+    assert inc.status == "error"
