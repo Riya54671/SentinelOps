@@ -223,3 +223,6 @@ __marimo__/
 .env
 data/*.db
 __pycache__/
+
+traces/*
+!traces/.gitkeep
