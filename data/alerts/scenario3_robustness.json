@@ -1,0 +1,1 @@
+{"alert_id": "C001", "scenario": "S3_robustness", "timestamp": "2026-10-12T14:00:00Z", "source": "Proxy", "rule": "Connection to Newly Registered Domain", "host": "hr-laptop-07", "user": "priya.m", "src_ip": "10.0.3.77", "dest_ip": "203.0.113.99", "description": "Visit to domain registered 2 days ago", "raw_severity": "medium"}
