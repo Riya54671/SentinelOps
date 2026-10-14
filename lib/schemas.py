@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 AgentName = Literal[
     "orchestrator", "enrichment", "correlation",
@@ -18,16 +18,23 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-# ---------- INPUT ----------
 class Alert(BaseModel):
+    # accepts both our own field names and the seed-data names (host, description)
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+
     alert_id: str
     timestamp: str
-    source: str                      # firewall, edr, auth, ...
-    rule: str                        # e.g. "Multiple failed SSH logins"
+    source: str
+    rule: str
     src_ip: Optional[str] = None
-    dest_host: Optional[str] = None
+    dest_ip: Optional[str] = None
+    dest_host: Optional[str] = Field(
+        None, validation_alias=AliasChoices("dest_host", "host"))
     user: Optional[str] = None
-    raw_log: str = ""
+    raw_log: str = Field(
+        "", validation_alias=AliasChoices("raw_log", "description"))
+    raw_severity: Optional[str] = None
+    scenario: Optional[str] = None
 
 
 # ---------- P2: Enrichment ----------
