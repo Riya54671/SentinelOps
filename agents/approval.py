@@ -111,3 +111,24 @@ def run(inc: Incident) -> Incident:
         return inc
     except Exception as e:
         return fail(inc, "approval", e)
+
+def _enforce_policy(inc, decision, proposal, asset):
+    """Hard business rule: never isolate a critical asset outside its maintenance window."""
+    bad = [a for a in proposal.actions
+           if a.action == "isolate_host"
+           and asset and asset.get("criticality") == "critical"
+           and not _in_maintenance_window(asset)]
+    if bad:
+        decision.decision = "reject"
+        decision.modified_actions = []
+        decision.constraints = ["do not isolate host",
+                                "prefer network-level IP block",
+                                "credential reset is acceptable"]
+        decision.reason = (f"{bad[0].target} is critical "
+                           f"({asset['business_function']}); isolation is blocked "
+                           "outside the maintenance window.")
+    elif decision.decision == "modify":
+        # modified_actions must really differ from the proposal
+        if decision.modified_actions == proposal.actions:
+            decision.decision = "reject"   # LLM said modify but changed nothing
+    return decision
